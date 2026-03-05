@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    tools:context=".ui.playback.PlaybackActivity">
+
+    <FrameLayout
+        android:id="@+id/playback_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <include layout="@layout/layout_buffering_indicator" />
+
+    <include layout="@layout/layout_network_diagnostic" />
+
+    <include layout="@layout/overlay_track_selection" />
+
+    <include layout="@layout/overlay_catchup" />
+
+</FrameLayout>

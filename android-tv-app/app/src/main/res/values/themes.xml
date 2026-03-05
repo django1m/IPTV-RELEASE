@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.IPTVPlayer" parent="Theme.Leanback">
+        <item name="android:colorPrimary">@color/primary</item>
+        <item name="android:colorPrimaryDark">@color/primary_dark</item>
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+
+        <!-- Leanback -->
+        <item name="defaultBrandColor">@color/primary</item>
+        <item name="defaultBrandColorDark">@color/primary_dark</item>
+        <item name="defaultSearchColor">@color/search_opaque</item>
+        <item name="defaultSearchIconColor">@color/primary</item>
+        <item name="defaultSearchBrightColor">@color/primary_light</item>
+
+        <!-- Browse -->
+        <item name="browseTitleTextStyle">@style/BrowseTitleText</item>
+        <item name="browseRowsMarginTop">8dp</item>
+        <item name="browseTitleViewLayout">@layout/browse_title_empty</item>
+        <item name="headersVerticalGridStyle">@style/HeadersVerticalGridStyle</item>
+
+        <!-- Details -->
+        <item name="detailsDescriptionTitleStyle">@style/DetailsDescriptionTitle</item>
+        <item name="detailsDescriptionSubtitleStyle">@style/DetailsDescriptionSubtitle</item>
+        <item name="detailsDescriptionBodyStyle">@style/DetailsDescriptionBody</item>
+    </style>
+
+    <style name="BrowseTitleText" parent="Widget.Leanback.Title.Text">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">36sp</item>
+    </style>
+
+    <style name="HeadersVerticalGridStyle" parent="Widget.Leanback.Headers.VerticalGridView">
+        <item name="android:background">@color/fastlane_background</item>
+    </style>
+
+    <style name="DetailsDescriptionTitle" parent="Widget.Leanback.DetailsDescriptionTitleStyle">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">28sp</item>
+    </style>
+
+    <style name="DetailsDescriptionSubtitle" parent="Widget.Leanback.DetailsDescriptionSubtitleStyle">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="DetailsDescriptionBody" parent="Widget.Leanback.DetailsDescriptionBodyStyle">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- Card styles -->
+    <style name="CardTitle">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="CardSubtitle">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- Login style -->
+    <style name="Theme.IPTVPlayer.Login" parent="Theme.IPTVPlayer">
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+
+    <!-- Update dialog -->
+    <style name="UpdateDialogTheme" parent="android:Theme.DeviceDefault.Dialog.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.7</item>
+    </style>
+
+</resources>

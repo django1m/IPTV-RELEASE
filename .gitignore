@@ -1,0 +1,23 @@
+# Build outputs
+android-tv-app/app/build/
+android-tv-app/build/
+android-tv-app/.gradle/
+
+# IDE
+.idea/
+*.iml
+android-tv-app/.idea/
+android-tv-app/local.properties
+
+# Signing
+*.jks
+*.keystore
+keystore.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code local rules
+.claude/hookify.*.local.md
+.claude/projects/

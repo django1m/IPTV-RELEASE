@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary">#F59E0B</color>
+    <color name="primary_dark">#D97706</color>
+    <color name="primary_light">#FBBF24</color>
+
+    <!-- Background Colors -->
+    <color name="background">#111827</color>
+    <color name="background_light">#1F2937</color>
+    <color name="surface">#374151</color>
+
+    <!-- Grid/Browse Screen Colors (brighter) -->
+    <color name="grid_background">#1E293B</color>
+    <color name="grid_surface">#334155</color>
+    <color name="tab_background">#0F172A</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#9CA3AF</color>
+    <color name="text_muted">#6B7280</color>
+
+    <!-- Accent Colors -->
+    <color name="error">#EF4444</color>
+    <color name="success">#22C55E</color>
+    <color name="live_badge">#EF4444</color>
+
+    <!-- Card Colors -->
+    <color name="card_background">#1F2937</color>
+    <color name="card_focused">#F59E0B</color>
+
+    <!-- EPG specific -->
+    <color name="epg_cell_past">#1F2937</color>
+    <color name="epg_cell_current">#334155</color>
+    <color name="epg_cell_future">#283548</color>
+    <color name="epg_cell_focused_border">#F59E0B</color>
+    <color name="epg_cell_focused_bg">#1AF59E0B</color>
+    <color name="epg_now_line">#F59E0B</color>
+    <color name="epg_time_ruler_bg">#0F172A</color>
+
+    <!-- Leanback specific -->
+    <color name="search_opaque">#FFAA3F</color>
+    <color name="default_background">#111827</color>
+    <color name="fastlane_background">#0D1117</color>
+    <color name="headers_background">#1F2937</color>
+</resources>

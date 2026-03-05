@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/account">
+
+        <Preference
+            android:key="account"
+            android:title="@string/account"
+            android:summary="Compte actif"
+            android:selectable="false" />
+
+        <Preference
+            android:key="add_account"
+            android:title="@string/add_account"
+            android:summary="Ajouter un nouveau compte IPTV" />
+
+        <Preference
+            android:key="logout"
+            android:title="@string/remove_account"
+            android:summary="Se déconnecter du compte actuel" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/about">
+
+        <Preference
+            android:key="version"
+            android:title="@string/app_name"
+            android:selectable="false" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

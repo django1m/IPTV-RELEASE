@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/buffering_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:orientation="vertical"
+    android:background="#CC111827"
+    android:padding="12dp"
+    android:visibility="gone">
+
+    <!-- Ligne principale : spinner + texte + statuts -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Spinner -->
+        <ProgressBar
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:indeterminateTint="@color/primary" />
+
+        <!-- Texte "Chargement..." -->
+        <TextView
+            android:id="@+id/buffering_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/loading"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:layout_marginStart="10dp" />
+
+        <!-- Statut Internet -->
+        <View
+            android:id="@+id/buffering_internet_dot"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:background="@color/text_muted" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/internet_connection"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginStart="6dp" />
+
+        <TextView
+            android:id="@+id/buffering_internet_latency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="12sp"
+            android:layout_marginStart="4dp" />
+
+        <!-- Séparateur -->
+        <View
+            android:layout_width="1dp"
+            android:layout_height="16dp"
+            android:background="@color/text_muted"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp" />
+
+        <!-- Statut Fournisseur -->
+        <View
+            android:id="@+id/buffering_provider_dot"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:background="@color/text_muted" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/provider_server"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginStart="6dp" />
+
+        <TextView
+            android:id="@+id/buffering_provider_latency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="12sp"
+            android:layout_marginStart="4dp" />
+
+    </LinearLayout>
+</LinearLayout>

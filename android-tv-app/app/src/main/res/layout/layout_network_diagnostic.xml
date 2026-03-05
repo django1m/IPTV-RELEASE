@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/diagnostic_overlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#DD111827"
+    android:visibility="gone"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="560dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:background="@color/background_light"
+        android:padding="32dp"
+        android:elevation="8dp">
+
+        <!-- Titre -->
+        <TextView
+            android:id="@+id/diagnostic_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/network_diagnostic"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Message d'erreur original -->
+        <TextView
+            android:id="@+id/diagnostic_error_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/error_playback"
+            android:textColor="@color/error"
+            android:textSize="14sp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Spinner de chargement -->
+        <LinearLayout
+            android:id="@+id/diagnostic_loading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:indeterminateTint="@color/primary"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/checking_network"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Résultats du diagnostic -->
+        <LinearLayout
+            android:id="@+id/diagnostic_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone">
+
+            <!-- Ligne Internet -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp"
+                android:background="@color/surface"
+                android:layout_marginBottom="8dp">
+
+                <View
+                    android:id="@+id/internet_status_dot"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:background="@color/text_muted" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/internet_connection"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:layout_marginStart="12dp" />
+
+                <TextView
+                    android:id="@+id/internet_status_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Ligne Fournisseur -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp"
+                android:background="@color/surface">
+
+                <View
+                    android:id="@+id/provider_status_dot"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:background="@color/text_muted" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/provider_server"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:layout_marginStart="12dp" />
+
+                <TextView
+                    android:id="@+id/provider_status_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Message de diagnostic -->
+        <TextView
+            android:id="@+id/diagnostic_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="28dp"
+            android:visibility="gone" />
+
+        <!-- Boutons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btn_diagnose"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="@string/run_diagnostic"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textAllCaps="false"
+                android:background="@color/surface"
+                android:focusable="true"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_retry"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="@string/retry"
+                android:textColor="#000000"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:background="@color/primary"
+                android:focusable="true"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_quit"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="@string/quit"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:textAllCaps="false"
+                android:background="@color/surface"
+                android:focusable="true" />
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>

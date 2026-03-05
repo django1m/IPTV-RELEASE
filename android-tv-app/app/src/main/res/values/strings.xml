@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IPTV Player</string>
+
+    <!-- Login -->
+    <string name="login_title">Connexion</string>
+    <string name="login_subtitle">Entrez vos identifiants Xtream Code</string>
+    <string name="account_name">Nom du compte</string>
+    <string name="server_url">URL du serveur</string>
+    <string name="username">Nom d\'utilisateur</string>
+    <string name="password">Mot de passe</string>
+    <string name="login_button">Se connecter</string>
+    <string name="logging_in">Connexion en cours…</string>
+    <string name="login_error">Erreur de connexion</string>
+    <string name="login_success">Connecté avec succès</string>
+
+    <!-- Main -->
+    <string name="live_tv">TV en direct</string>
+    <string name="movies">Films</string>
+    <string name="series">Séries</string>
+    <string name="favorites">Favoris</string>
+    <string name="settings">Paramètres</string>
+    <string name="search">Rechercher</string>
+    <string name="all_categories">Toutes les catégories</string>
+
+    <!-- Details -->
+    <string name="play">Lecture</string>
+    <string name="add_favorite">Ajouter aux favoris</string>
+    <string name="remove_favorite">Retirer des favoris</string>
+    <string name="episodes">Épisodes</string>
+    <string name="season">Saison %d</string>
+    <string name="episode">Épisode %d</string>
+    <string name="rating">Note</string>
+    <string name="genre">Genre</string>
+    <string name="director">Réalisateur</string>
+    <string name="cast">Distribution</string>
+    <string name="release_date">Date de sortie</string>
+
+    <!-- Playback -->
+    <string name="loading">Chargement…</string>
+    <string name="error_playback">Erreur de lecture</string>
+    <string name="retry">Réessayer</string>
+    <string name="live">EN DIRECT</string>
+    <string name="resume">Reprendre</string>
+    <string name="play_from_start">Depuis le début</string>
+    <string name="next_episode">Épisode suivant</string>
+    <string name="previous_episode">Épisode précédent</string>
+
+    <!-- Favorites -->
+    <string name="added_to_favorites">Ajouté aux favoris</string>
+    <string name="removed_from_favorites">Retiré des favoris</string>
+    <string name="no_favorites">Aucun favori</string>
+    <string name="add_favorites_hint">Appuyez longuement sur un contenu pour l\'ajouter aux favoris</string>
+
+    <!-- Continue Watching -->
+    <string name="continue_watching">Continuer à regarder</string>
+    <string name="minutes_remaining">%d min restantes</string>
+
+    <!-- Settings -->
+    <string name="buffer_mode">Tampon de lecture</string>
+    <string name="buffer_default">Par défaut — démarrage rapide</string>
+    <string name="buffer_5s">5 secondes — réduit les lags</string>
+    <string name="buffer_10s">10 secondes — connexion instable</string>
+    <string name="buffer_loading">Chargement…</string>
+    <string name="buffer_applied">Tampon appliqué à la prochaine lecture</string>
+    <string name="account">Compte</string>
+    <string name="switch_account">Changer de compte</string>
+    <string name="add_account">Ajouter un compte</string>
+    <string name="remove_account">Supprimer le compte</string>
+    <string name="refresh_on_back">Le contenu sera rechargé en quittant les paramètres</string>
+    <string name="refresh_pending">Rechargement en attente…</string>
+    <string name="about">À propos</string>
+    <string name="version">Version %s</string>
+
+    <!-- Navigation hints -->
+    <string name="nav_hint_select">OK : Sélectionner</string>
+    <string name="nav_hint_back">Retour : Précédent</string>
+    <string name="nav_hint_navigate">◀ ▶ ▲ ▼ : Naviguer</string>
+
+    <!-- Network Diagnostic -->
+    <string name="network_diagnostic">Diagnostic réseau</string>
+    <string name="checking_network">Vérification de la connexion…</string>
+    <string name="internet_connection">Connexion internet</string>
+    <string name="provider_server">Serveur fournisseur</string>
+    <string name="status_ok">OK — %dms</string>
+    <string name="status_error">Erreur</string>
+    <string name="diag_internet_down">Votre connexion internet semble coupée.\nVérifiez votre réseau Wi-Fi ou câble Ethernet.</string>
+    <string name="diag_provider_down">Le serveur de votre fournisseur IPTV ne répond pas.\nLe problème vient du fournisseur, pas de votre connexion.</string>
+    <string name="diag_both_down">Votre connexion internet semble coupée.\nVérifiez votre réseau Wi-Fi ou câble Ethernet.</string>
+    <string name="diag_all_ok">La connexion semble rétablie.\nEssayez de relancer la lecture.</string>
+    <string name="run_diagnostic">Diagnostiquer</string>
+    <string name="quit">Quitter</string>
+
+    <!-- Track Selection -->
+    <string name="track_selection_title">Pistes audio et sous-titres</string>
+    <string name="track_audio">Audio</string>
+    <string name="track_subtitles">Sous-titres</string>
+    <string name="track_disabled">Désactivés</string>
+    <string name="track_no_alternative">Aucune piste alternative disponible</string>
+    <string name="track_label">Piste %d</string>
+    <string name="track_selected">✓ %s</string>
+
+    <!-- Catch-up / Replay -->
+    <string name="catchup_title">Replay TV</string>
+    <string name="catchup_no_data">Pas de données EPG disponibles</string>
+    <string name="catchup_not_available">Replay non disponible pour cette chaîne</string>
+    <string name="catchup_back_to_live">Retour au direct</string>
+    <string name="catchup_now_playing">En cours</string>
+    <string name="catchup_archive_available">Replay disponible</string>
+
+    <!-- Updates -->
+    <string name="update_available_title">Mise a jour disponible</string>
+    <string name="update_version">Version %s disponible (actuelle: %s)</string>
+    <string name="update_now">Mettre a jour</string>
+    <string name="update_later">Plus tard</string>
+    <string name="update_checking">Verification des mises a jour…</string>
+    <string name="update_up_to_date">L\'application est a jour (v%s)</string>
+    <string name="update_error">Impossible de verifier les mises a jour</string>
+    <string name="update_downloading">Telechargement en cours…</string>
+    <string name="check_update">Verifier les mises a jour</string>
+
+    <!-- EPG / Guide TV -->
+    <string name="epg_title">Guide TV</string>
+    <string name="epg_loading">Chargement du guide…</string>
+    <string name="epg_no_data">Aucune donnée EPG</string>
+    <string name="epg_jump_to_now">Maintenant</string>
+    <string name="epg_all_categories">Toutes les chaînes</string>
+    <string name="epg_archive_available">Replay</string>
+    <string name="tab_guide">Guide</string>
+</resources>
