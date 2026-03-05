@@ -1,8 +1,14 @@
 package com.iptvplayer.tv.ui.browse
 
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.text.TextUtils
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -82,6 +88,9 @@ class CardPresenter(
         cardView.setMainImageDimensions(cardWidth, cardHeight)
 
         loadImage(cardView, stream.streamIcon)
+        // Remove rating badge if recycled from VOD/Series
+        val imageParent = cardView.mainImageView.parent as? ViewGroup
+        imageParent?.findViewWithTag<TextView>(RATING_TAG)?.let { imageParent.removeView(it) }
 
         if (FavoritesCache.isFavorite(ContentType.LIVE, stream.streamId)) {
             cardView.badgeImage = favoriteIcon
@@ -96,6 +105,7 @@ class CardPresenter(
         cardView.setMainImageDimensions(cardWidth, posterHeight)
 
         loadImage(cardView, vod.streamIcon)
+        setRatingBadge(cardView, vod.rating)
 
         if (FavoritesCache.isFavorite(ContentType.VOD, vod.streamId)) {
             cardView.badgeImage = favoriteIcon
@@ -110,6 +120,7 @@ class CardPresenter(
         cardView.setMainImageDimensions(cardWidth, posterHeight)
 
         loadImage(cardView, series.cover)
+        setRatingBadge(cardView, series.rating)
 
         if (FavoritesCache.isFavorite(ContentType.SERIES, series.seriesId)) {
             cardView.badgeImage = favoriteIcon
@@ -131,10 +142,50 @@ class CardPresenter(
         }
     }
 
+    private fun setRatingBadge(cardView: ImageCardView, rating: String?) {
+        val imageParent = cardView.mainImageView.parent as? ViewGroup ?: return
+        // Remove old rating badge if exists
+        val existingBadge = imageParent.findViewWithTag<TextView>(RATING_TAG)
+        existingBadge?.let { imageParent.removeView(it) }
+
+        val ratingValue = rating?.toDoubleOrNull() ?: return
+        if (ratingValue <= 0) return
+
+        val ctx = cardView.context
+        val dp = ctx.resources.displayMetrics.density
+
+        val badge = TextView(ctx).apply {
+            tag = RATING_TAG
+            text = "\u2B50 ${String.format("%.1f", ratingValue)}"
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
+            setPadding((6 * dp).toInt(), (3 * dp).toInt(), (8 * dp).toInt(), (3 * dp).toInt())
+            background = GradientDrawable().apply {
+                setColor(0xCC000000.toInt())
+                cornerRadius = 6 * dp
+            }
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.TOP or Gravity.START
+                topMargin = (8 * dp).toInt()
+                marginStart = (8 * dp).toInt()
+            }
+        }
+
+        imageParent.addView(badge)
+    }
+
     override fun onUnbindViewHolder(viewHolder: ViewHolder) {
         val cardView = viewHolder.view as ImageCardView
         cardView.badgeImage = null
         cardView.mainImage = null
+        // Clean up rating badge
+        val imageParent = cardView.mainImageView.parent as? ViewGroup
+        val badge = imageParent?.findViewWithTag<TextView>(RATING_TAG)
+        badge?.let { imageParent.removeView(it) }
     }
 
     private fun updateCardBackgroundColor(view: ImageCardView, selected: Boolean) {
@@ -143,6 +194,7 @@ class CardPresenter(
     }
 
     companion object {
+        private const val RATING_TAG = "rating_badge"
         const val DEFAULT_CARD_WIDTH = 260
         const val DEFAULT_CARD_HEIGHT = 195
         const val DEFAULT_POSTER_HEIGHT = 390
