@@ -1,13 +1,8 @@
 package com.iptvplayer.tv.ui.browse
 
-import android.graphics.Color
-import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.text.TextUtils
-import android.util.TypedValue
-import android.view.Gravity
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -86,10 +81,7 @@ class CardPresenter(
         cardView.contentText = "TV en direct"
         cardView.setMainImageDimensions(cardWidth, cardHeight)
 
-        loadImage(cardView, stream.streamIcon)
-        // Remove rating badge if recycled from VOD/Series
-        val imageParent = cardView.mainImageView.parent as? ViewGroup
-        imageParent?.findViewWithTag<TextView>(RATING_TAG)?.let { imageParent.removeView(it) }
+        loadImage(cardView, stream.streamIcon, rating = null)
 
         if (FavoritesCache.isFavorite(ContentType.LIVE, stream.streamId)) {
             cardView.badgeImage = favoriteIcon
@@ -103,8 +95,7 @@ class CardPresenter(
         cardView.contentText = "Film"
         cardView.setMainImageDimensions(cardWidth, posterHeight)
 
-        loadImage(cardView, vod.streamIcon)
-        setRatingBadge(cardView, vod.rating)
+        loadImage(cardView, vod.streamIcon, rating = vod.rating)
 
         if (FavoritesCache.isFavorite(ContentType.VOD, vod.streamId)) {
             cardView.badgeImage = favoriteIcon
@@ -118,8 +109,7 @@ class CardPresenter(
         cardView.contentText = series.genre ?: "Série"
         cardView.setMainImageDimensions(cardWidth, posterHeight)
 
-        loadImage(cardView, series.cover)
-        setRatingBadge(cardView, series.rating)
+        loadImage(cardView, series.cover, rating = series.rating)
 
         if (FavoritesCache.isFavorite(ContentType.SERIES, series.seriesId)) {
             cardView.badgeImage = favoriteIcon
@@ -128,61 +118,31 @@ class CardPresenter(
         }
     }
 
-    private fun loadImage(cardView: ImageCardView, url: String?) {
+    private fun loadImage(cardView: ImageCardView, url: String?, rating: String?) {
         if (!url.isNullOrEmpty()) {
+            val transformations = buildList {
+                add(RoundedCornersTransformation(12f))
+                // Add rating overlay for VOD/Series with valid rating
+                val ratingValue = rating?.toDoubleOrNull()
+                if (ratingValue != null && ratingValue > 0) {
+                    add(RatingOverlayTransformation(rating))
+                }
+            }
             cardView.mainImageView.load(url) {
                 crossfade(true)
                 placeholder(R.drawable.default_card)
                 error(R.drawable.default_card)
-                transformations(RoundedCornersTransformation(12f))
+                transformations(transformations)
             }
         } else {
             cardView.mainImage = defaultCardImage
         }
     }
 
-    private fun setRatingBadge(cardView: ImageCardView, rating: String?) {
-        val imageParent = cardView.mainImageView.parent as? ViewGroup ?: return
-        // Remove old rating badge if exists
-        val existingBadge = imageParent.findViewWithTag<TextView>(RATING_TAG)
-        existingBadge?.let { imageParent.removeView(it) }
-
-        val ratingValue = rating?.toDoubleOrNull() ?: return
-        if (ratingValue <= 0) return
-
-        val ctx = cardView.context
-        val dp = ctx.resources.displayMetrics.density
-
-        val badge = TextView(ctx).apply {
-            tag = RATING_TAG
-            text = "\u2B50 ${String.format("%.1f", ratingValue)}"
-            setTextColor(Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
-            typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
-            setShadowLayer(4f * dp, 1f, 1f, 0xFF000000.toInt())
-            setPadding((6 * dp).toInt(), (3 * dp).toInt(), (8 * dp).toInt(), (3 * dp).toInt())
-            setBackgroundColor(Color.TRANSPARENT)
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                gravity = Gravity.TOP or Gravity.START
-                topMargin = (6 * dp).toInt()
-                marginStart = (6 * dp).toInt()
-            }
-        }
-
-        imageParent.addView(badge)
-    }
-
     override fun onUnbindViewHolder(viewHolder: ViewHolder) {
         val cardView = viewHolder.view as ImageCardView
         cardView.badgeImage = null
         cardView.mainImage = null
-        // Clean up rating badge
-        val imageParent = cardView.mainImageView.parent as? ViewGroup
-        val badge = imageParent?.findViewWithTag<TextView>(RATING_TAG)
-        badge?.let { imageParent.removeView(it) }
     }
 
     private fun updateCardBackgroundColor(view: ImageCardView, selected: Boolean) {
@@ -191,7 +151,6 @@ class CardPresenter(
     }
 
     companion object {
-        private const val RATING_TAG = "rating_badge"
         const val DEFAULT_CARD_WIDTH = 260
         const val DEFAULT_CARD_HEIGHT = 195
         const val DEFAULT_POSTER_HEIGHT = 390

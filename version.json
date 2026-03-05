@@ -1,6 +1,6 @@
 {
-  "versionCode": 3,
-  "versionName": "1.0.2",
-  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.2/app-release.apk",
-  "releaseNotes": "Badge rating avec fond transparent sur les images Films et Series"
+  "versionCode": 4,
+  "versionName": "1.0.3",
+  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.3/app-release.apk",
+  "releaseNotes": "Rating avec etoile et score affiche directement sur les images Films et Series (transformation Coil sur le bitmap)"
 }
