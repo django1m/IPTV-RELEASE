@@ -505,9 +505,37 @@ class MainActivity : FragmentActivity() {
         }
 
         dialogView.findViewById<Button>(R.id.btn_update_now).setOnClickListener {
-            dialog.dismiss()
-            Toast.makeText(this, getString(R.string.update_downloading), Toast.LENGTH_LONG).show()
-            updateManager.downloadAndInstall(updateInfo)
+            // Check install permission first
+            if (!updateManager.canInstallPackages()) {
+                dialog.dismiss()
+                Toast.makeText(this, "Veuillez autoriser l'installation depuis cette application", Toast.LENGTH_LONG).show()
+                updateManager.openInstallPermissionSettings()
+                return@setOnClickListener
+            }
+
+            // Disable buttons and show progress
+            val btnUpdate = dialogView.findViewById<Button>(R.id.btn_update_now)
+            val btnLater = dialogView.findViewById<Button>(R.id.btn_update_later)
+            btnUpdate.isEnabled = false
+            btnUpdate.text = "Telechargement 0%"
+            btnLater.isEnabled = false
+            dialog.setCancelable(false)
+
+            lifecycleScope.launch {
+                updateManager.downloadAndInstall(
+                    updateInfo,
+                    onProgress = { progress ->
+                        btnUpdate.text = "Telechargement $progress%"
+                    },
+                    onError = { error ->
+                        dialog.dismiss()
+                        Toast.makeText(this@MainActivity, error, Toast.LENGTH_LONG).show()
+                    },
+                    onDownloadComplete = {
+                        dialog.dismiss()
+                    }
+                )
+            }
         }
 
         dialog.show()

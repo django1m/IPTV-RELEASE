@@ -1,13 +1,12 @@
 package com.iptvplayer.tv.data.update
 
-import android.app.DownloadManager
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.Settings
+import android.util.Log
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,6 +16,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
 @Serializable
@@ -30,6 +30,7 @@ data class UpdateInfo(
 class UpdateManager(private val context: Context) {
 
     companion object {
+        private const val TAG = "UpdateManager"
         const val VERSION_CHECK_URL = "https://raw.githubusercontent.com/django1m/IPTV-RELEASE/main/version.json"
         private const val APK_FILE_NAME = "iptv-player-update.apk"
     }
@@ -37,8 +38,10 @@ class UpdateManager(private val context: Context) {
     private val json = Json { ignoreUnknownKeys = true }
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .followRedirects(true)
+        .followSslRedirects(true)
         .build()
 
     /**
@@ -47,76 +50,150 @@ class UpdateManager(private val context: Context) {
      */
     suspend fun checkForUpdate(): UpdateInfo? = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "Checking for update at: $VERSION_CHECK_URL")
             val request = Request.Builder().url(VERSION_CHECK_URL).build()
             val response = client.newCall(request).execute()
 
-            if (!response.isSuccessful) return@withContext null
+            if (!response.isSuccessful) {
+                Log.e(TAG, "Update check failed: HTTP ${response.code}")
+                return@withContext null
+            }
 
             val body = response.body?.string() ?: return@withContext null
+            Log.d(TAG, "Response: $body")
             val updateInfo = json.decodeFromString<UpdateInfo>(body)
 
             val currentVersionCode = getCurrentVersionCode()
+            Log.d(TAG, "Current: $currentVersionCode, Remote: ${updateInfo.versionCode}")
             if (updateInfo.versionCode > currentVersionCode) {
+                Log.d(TAG, "Update available: ${updateInfo.versionName}")
                 updateInfo
             } else {
+                Log.d(TAG, "App is up to date")
                 null
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Update check error", e)
             null
         }
     }
 
     /**
-     * Download the APK using DownloadManager and install when complete.
+     * Check if the app has permission to install APKs.
      */
-    fun downloadAndInstall(updateInfo: UpdateInfo, onProgress: ((String) -> Unit)? = null) {
-        // Clean up old APK if exists
-        val apkFile = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APK_FILE_NAME)
-        if (apkFile.exists()) apkFile.delete()
+    fun canInstallPackages(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.packageManager.canRequestPackageInstalls()
+        } else {
+            true
+        }
+    }
 
-        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    /**
+     * Open system settings to allow installing from this app.
+     */
+    fun openInstallPermissionSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                data = Uri.parse("package:${context.packageName}")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+        }
+    }
 
-        val downloadRequest = DownloadManager.Request(Uri.parse(updateInfo.downloadUrl))
-            .setTitle("IPTV Player ${updateInfo.versionName}")
-            .setDescription("Mise a jour en cours...")
-            .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, APK_FILE_NAME)
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+    /**
+     * Download the APK using OkHttp and install when complete.
+     * Uses coroutines instead of DownloadManager to avoid BroadcastReceiver issues.
+     */
+    suspend fun downloadAndInstall(
+        updateInfo: UpdateInfo,
+        onProgress: ((Int) -> Unit)? = null,
+        onError: ((String) -> Unit)? = null,
+        onDownloadComplete: (() -> Unit)? = null
+    ) = withContext(Dispatchers.IO) {
+        try {
+            // Clean up old APK if exists
+            val apkFile = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APK_FILE_NAME)
+            if (apkFile.exists()) apkFile.delete()
 
-        val downloadId = downloadManager.enqueue(downloadRequest)
+            Log.d(TAG, "Downloading APK from: ${updateInfo.downloadUrl}")
 
-        onProgress?.invoke("Telechargement en cours...")
+            val request = Request.Builder()
+                .url(updateInfo.downloadUrl)
+                .build()
 
-        // Register receiver for download completion
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(ctx: Context?, intent: Intent?) {
-                val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1) ?: return
-                if (id == downloadId) {
-                    context.unregisterReceiver(this)
-                    installApk(apkFile)
+            val response = client.newCall(request).execute()
+
+            if (!response.isSuccessful) {
+                val errorMsg = "Erreur de telechargement: HTTP ${response.code}"
+                Log.e(TAG, errorMsg)
+                withContext(Dispatchers.Main) { onError?.invoke(errorMsg) }
+                return@withContext
+            }
+
+            val body = response.body
+            if (body == null) {
+                val errorMsg = "Reponse vide du serveur"
+                Log.e(TAG, errorMsg)
+                withContext(Dispatchers.Main) { onError?.invoke(errorMsg) }
+                return@withContext
+            }
+
+            val contentLength = body.contentLength()
+            Log.d(TAG, "APK size: $contentLength bytes")
+
+            // Download with progress
+            body.byteStream().use { input ->
+                FileOutputStream(apkFile).use { output ->
+                    val buffer = ByteArray(8192)
+                    var totalRead = 0L
+                    var bytesRead: Int
+
+                    while (input.read(buffer).also { bytesRead = it } != -1) {
+                        output.write(buffer, 0, bytesRead)
+                        totalRead += bytesRead
+
+                        if (contentLength > 0) {
+                            val progress = ((totalRead * 100) / contentLength).toInt()
+                            withContext(Dispatchers.Main) { onProgress?.invoke(progress) }
+                        }
+                    }
+                    output.flush()
                 }
             }
-        }
 
-        context.registerReceiver(
-            receiver,
-            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-            Context.RECEIVER_NOT_EXPORTED
-        )
+            Log.d(TAG, "Download complete: ${apkFile.absolutePath} (${apkFile.length()} bytes)")
+            withContext(Dispatchers.Main) {
+                onDownloadComplete?.invoke()
+                installApk(apkFile)
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Download error", e)
+            val errorMsg = "Erreur: ${e.message}"
+            withContext(Dispatchers.Main) { onError?.invoke(errorMsg) }
+        }
     }
 
     private fun installApk(apkFile: File) {
-        val uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            apkFile
-        )
+        try {
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                apkFile
+            )
 
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            Log.d(TAG, "Installing APK from URI: $uri")
+
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(TAG, "Install error", e)
         }
-        context.startActivity(intent)
     }
 
     private fun getCurrentVersionCode(): Int {
