@@ -38,7 +38,7 @@ class CardPresenter(
         val cardView = ImageCardView(parent.context).apply {
             isFocusable = true
             isFocusableInTouchMode = true
-            setMainImageDimensions(cardWidth, cardHeight)
+            setMainImageDimensions(cardWidth, posterHeight)
             setMainImageScaleType(ImageView.ScaleType.CENTER_CROP)
             // Always show title + subtitle below the image
             setInfoVisibility(BaseCardView.CARD_REGION_VISIBLE_ALWAYS)
