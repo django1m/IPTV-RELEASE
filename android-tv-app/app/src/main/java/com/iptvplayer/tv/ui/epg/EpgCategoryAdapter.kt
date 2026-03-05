@@ -59,7 +59,7 @@ class EpgCategoryAdapter(
             textView.text = item.name
             textView.isSelected = isSelected
             if (isSelected) {
-                textView.setTextColor(0xFFF59E0B.toInt())
+                textView.setTextColor(0xFF6366F1.toInt())
                 textView.typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
             } else {
                 textView.setTextColor(0xFF9CA3AF.toInt())

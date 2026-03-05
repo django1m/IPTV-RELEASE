@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Focused state: amber glow -->
+    <!-- Focused state: indigo glow -->
     <item android:state_focused="true">
         <layer-list>
             <!-- Gradient background -->
             <item>
                 <shape android:shape="rectangle">
                     <gradient
-                        android:startColor="#40F59E0B"
-                        android:endColor="#1AF59E0B"
+                        android:startColor="#406366F1"
+                        android:endColor="#1A6366F1"
                         android:angle="135" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
-            <!-- Amber border -->
+            <!-- Indigo border -->
             <item>
                 <shape android:shape="rectangle">
-                    <stroke android:width="2dp" android:color="#CCF59E0B" />
+                    <stroke android:width="2dp" android:color="#CC6366F1" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>

@@ -75,9 +75,9 @@ class EpgView @JvmOverloads constructor(
     private val cellPastPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF1F2937.toInt() }
     private val cellCurrentPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF334155.toInt() }
     private val cellFuturePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF283548.toInt() }
-    private val cellFocusedBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0x33F59E0B.toInt() }
+    private val cellFocusedBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0x336366F1.toInt() }
     private val cellFocusBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFF59E0B.toInt(); style = Paint.Style.STROKE; strokeWidth = focusBorderWidth
+        color = 0xFF6366F1.toInt(); style = Paint.Style.STROKE; strokeWidth = focusBorderWidth
     }
     private val titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFFFFFFFF.toInt(); textSize = 14f * density; typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
@@ -95,11 +95,11 @@ class EpgView @JvmOverloads constructor(
         color = 0xFFFFFFFF.toInt(); textSize = 13f * density; typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
     }
     private val nowLinePaint = Paint().apply {
-        color = 0xFFF59E0B.toInt(); strokeWidth = nowLineWidth; style = Paint.Style.STROKE
+        color = 0xFF6366F1.toInt(); strokeWidth = nowLineWidth; style = Paint.Style.STROKE
     }
-    private val nowDotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFF59E0B.toInt() }
+    private val nowDotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF6366F1.toInt() }
     private val dividerPaint = Paint().apply { color = 0x1AFFFFFF.toInt() }
-    private val archivePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFF59E0B.toInt(); textSize = 10f * density }
+    private val archivePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF6366F1.toInt(); textSize = 10f * density }
     private val rulerLinePaint = Paint().apply { color = 0x33FFFFFF.toInt(); strokeWidth = 1f * density }
     private val cornerBgPaint = Paint().apply { color = 0xFF0D1117.toInt() }
 

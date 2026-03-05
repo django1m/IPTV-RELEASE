@@ -19,7 +19,7 @@
         android:id="@+id/update_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FFF59E0B"
+        android:textColor="#FF818CF8"
         android:textSize="18sp"
         android:layout_marginBottom="16dp" />
 
