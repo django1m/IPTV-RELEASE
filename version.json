@@ -1,6 +1,6 @@
 {
-  "versionCode": 2,
-  "versionName": "1.0.1",
-  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.1/app-release.apk",
-  "releaseNotes": "Correction des favoris dans l'EPG, ajout du badge rating (etoile + note) sur les cards Films et Series, systeme de mise a jour integre"
+  "versionCode": 3,
+  "versionName": "1.0.2",
+  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.2/app-release.apk",
+  "releaseNotes": "Badge rating avec fond transparent sur les images Films et Series"
 }

@@ -3,7 +3,6 @@ package com.iptvplayer.tv.ui.browse
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
@@ -160,18 +159,16 @@ class CardPresenter(
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
+            setShadowLayer(4f * dp, 1f, 1f, 0xFF000000.toInt())
             setPadding((6 * dp).toInt(), (3 * dp).toInt(), (8 * dp).toInt(), (3 * dp).toInt())
-            background = GradientDrawable().apply {
-                setColor(0xCC000000.toInt())
-                cornerRadius = 6 * dp
-            }
+            setBackgroundColor(Color.TRANSPARENT)
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
-                topMargin = (8 * dp).toInt()
-                marginStart = (8 * dp).toInt()
+                topMargin = (6 * dp).toInt()
+                marginStart = (6 * dp).toInt()
             }
         }
 
