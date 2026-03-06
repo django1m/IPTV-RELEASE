@@ -45,6 +45,7 @@ class MainActivity : FragmentActivity() {
     private lateinit var tabMovies: Button
     private lateinit var tabSeries: Button
     private lateinit var tabFavorites: Button
+    private lateinit var tabRecently: Button
     private lateinit var tabGuide: ImageButton
     private lateinit var tabSearch: ImageButton
     private lateinit var tabSettings: ImageButton
@@ -74,7 +75,7 @@ class MainActivity : FragmentActivity() {
     }
 
     enum class Tab {
-        LIVE, MOVIES, SERIES, FAVORITES
+        LIVE, MOVIES, SERIES, FAVORITES, RECENTLY
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,6 +134,7 @@ class MainActivity : FragmentActivity() {
         tabMovies = findViewById(R.id.tab_movies)
         tabSeries = findViewById(R.id.tab_series)
         tabFavorites = findViewById(R.id.tab_favorites)
+        tabRecently = findViewById(R.id.tab_recently)
         tabGuide = findViewById(R.id.tab_guide)
         tabSearch = findViewById(R.id.tab_search)
         tabSettings = findViewById(R.id.tab_settings)
@@ -141,7 +143,7 @@ class MainActivity : FragmentActivity() {
         loadingProgress = findViewById(R.id.loading_progress)
         loadingText = findViewById(R.id.loading_text)
 
-        tabButtons.addAll(listOf(tabLive, tabMovies, tabSeries, tabFavorites))
+        tabButtons.addAll(listOf(tabLive, tabMovies, tabSeries, tabFavorites, tabRecently))
     }
 
     private fun setupTabListeners() {
@@ -149,6 +151,7 @@ class MainActivity : FragmentActivity() {
         tabMovies.setOnClickListener { selectTab(Tab.MOVIES) }
         tabSeries.setOnClickListener { selectTab(Tab.SERIES) }
         tabFavorites.setOnClickListener { selectTab(Tab.FAVORITES) }
+        tabRecently.setOnClickListener { selectTab(Tab.RECENTLY) }
         tabGuide.setOnClickListener { openGuide() }
         tabSearch.setOnClickListener { openSearch() }
         tabSettings.setOnClickListener { openSettings() }
@@ -342,6 +345,7 @@ class MainActivity : FragmentActivity() {
             Tab.MOVIES -> tabMovies.isSelected = true
             Tab.SERIES -> tabSeries.isSelected = true
             Tab.FAVORITES -> tabFavorites.isSelected = true
+            Tab.RECENTLY -> tabRecently.isSelected = true
         }
 
         // Use cached fragments - show/hide instead of replace to avoid re-creating
@@ -361,6 +365,7 @@ class MainActivity : FragmentActivity() {
                 Tab.MOVIES -> ContentGridFragment.newInstance(ContentType.VOD)
                 Tab.SERIES -> ContentGridFragment.newInstance(ContentType.SERIES)
                 Tab.FAVORITES -> FavoritesFragment.newInstance()
+                Tab.RECENTLY -> RecentlyWatchedFragment.newInstance()
             }
             fragmentCache[tab] = newFragment
             transaction.add(R.id.content_fragment, newFragment)
@@ -461,6 +466,7 @@ class MainActivity : FragmentActivity() {
                     Tab.MOVIES -> tabMovies.requestFocus()
                     Tab.SERIES -> tabSeries.requestFocus()
                     Tab.FAVORITES -> tabFavorites.requestFocus()
+                    Tab.RECENTLY -> tabRecently.requestFocus()
                 }
                 return true
             }

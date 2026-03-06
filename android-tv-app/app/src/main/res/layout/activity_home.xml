@@ -99,6 +99,22 @@
                 android:focusable="true"
                 android:nextFocusDown="@id/content_fragment" />
 
+            <Button
+                android:id="@+id/tab_recently"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Récemment"
+                android:textColor="@color/tab_text_color"
+                android:textSize="15sp"
+                android:textAllCaps="true"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.04"
+                android:background="@drawable/tab_button_background"
+                android:paddingHorizontal="20dp"
+                android:layout_marginEnd="4dp"
+                android:focusable="true"
+                android:nextFocusDown="@id/content_fragment" />
+
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
