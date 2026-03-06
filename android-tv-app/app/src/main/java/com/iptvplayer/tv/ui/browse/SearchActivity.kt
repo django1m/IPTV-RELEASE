@@ -47,15 +47,16 @@ class SearchActivity : FragmentActivity() {
                         isLongPressTriggered = false
                         longPressHandler.postDelayed(longPressRunnable, longPressDelay)
                     }
-                    return true
+                    // Don't consume - let it propagate for normal handling
                 }
                 KeyEvent.ACTION_UP -> {
                     longPressHandler.removeCallbacks(longPressRunnable)
-                    if (!isLongPressTriggered) {
-                        // Normal click - let the system handle it
-                        return super.dispatchKeyEvent(event)
+                    if (isLongPressTriggered) {
+                        // Long press was handled, consume the event
+                        isLongPressTriggered = false
+                        return true
                     }
-                    return true
+                    // Short press - let it through normally
                 }
             }
         }

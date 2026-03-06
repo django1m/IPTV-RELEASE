@@ -1,6 +1,6 @@
 {
-  "versionCode": 8,
-  "versionName": "1.0.7",
-  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.7/app-release.apk",
-  "releaseNotes": "Nouvel onglet Recemment: historique de visionnage avec reprise de lecture pour les films et series"
+  "versionCode": 9,
+  "versionName": "1.0.8",
+  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.8/app-release.apk",
+  "releaseNotes": "Correction du clic sur les resultats de recherche (films, series)"
 }
