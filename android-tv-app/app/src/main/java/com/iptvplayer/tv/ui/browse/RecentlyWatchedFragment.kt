@@ -41,26 +41,16 @@ class RecentlyWatchedFragment : RowsSupportFragment() {
         onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
             if (item is WatchHistory) openWatchHistory(item)
         }
-
-        loadAccount()
     }
 
     override fun onResume() {
         super.onResume()
-        if (currentAccount != null) {
-            loadHistory()
-        }
-    }
-
-    private fun loadAccount() {
         viewLifecycleOwner.lifecycleScope.launch {
-            currentAccount = accountRepository.getActiveAccount() ?: return@launch
-            client = accountRepository.getClient(currentAccount!!)
-            // Don't call loadHistory() here - onResume() hasn't fired yet on first load
-            // but onViewCreated -> loadAccount is before onResume, so we call it once here
-            if (rowsAdapter.size() == 0) {
-                loadHistory()
+            if (currentAccount == null) {
+                currentAccount = accountRepository.getActiveAccount() ?: return@launch
+                client = accountRepository.getClient(currentAccount!!)
             }
+            loadHistory()
         }
     }
 
