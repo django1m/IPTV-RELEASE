@@ -35,8 +35,10 @@ import com.iptvplayer.tv.data.repository.FavoritesRepository
 import com.iptvplayer.tv.ui.detail.DetailActivity
 import com.iptvplayer.tv.ui.playback.PlaybackActivity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -179,12 +181,55 @@ class ContentGridFragment : Fragment() {
         contentHeader.visibility = View.VISIBLE
         headerCategoryName.text = category.categoryName
 
-        val items = when (contentType) {
+        val cachedItems: List<Any>? = when (contentType) {
             ContentType.LIVE -> ContentCache.getLiveStreams(category.categoryId)
             ContentType.VOD -> ContentCache.getVodStreams(category.categoryId)
             ContentType.SERIES -> ContentCache.getSeries(category.categoryId)
-        } ?: return
+        }
 
+        if (cachedItems != null) {
+            displayContent(cachedItems)
+        } else {
+            // Content not in cache - load from API
+            loadContentFromApi(category)
+        }
+    }
+
+    private fun loadContentFromApi(category: Category) {
+        val xtreamClient = client ?: return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val items: List<Any> = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    when (contentType) {
+                        ContentType.LIVE -> {
+                            val streams = xtreamClient.getLiveStreams(category.categoryId)
+                            ContentCache.setLiveStreams(category.categoryId, streams)
+                            streams
+                        }
+                        ContentType.VOD -> {
+                            val streams = xtreamClient.getVodStreams(category.categoryId)
+                            ContentCache.setVodStreams(category.categoryId, streams)
+                            streams
+                        }
+                        ContentType.SERIES -> {
+                            val series = xtreamClient.getSeries(category.categoryId)
+                            ContentCache.setSeries(category.categoryId, series)
+                            series
+                        }
+                    }
+                }
+                // Only display if we're still on the same category
+                if (selectedCategory?.categoryId == category.categoryId) {
+                    displayContent(items)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun displayContent(items: List<Any>) {
         val numColumns = when (contentType) {
             ContentType.LIVE -> NUM_COLUMNS_CONTENT
             else -> NUM_COLUMNS_POSTER

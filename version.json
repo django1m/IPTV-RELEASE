@@ -1,6 +1,6 @@
 {
-  "versionCode": 9,
-  "versionName": "1.0.8",
-  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.8/app-release.apk",
-  "releaseNotes": "Correction du clic sur les resultats de recherche (films, series)"
+  "versionCode": 10,
+  "versionName": "1.0.9",
+  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.9/app-release.apk",
+  "releaseNotes": "Correction des categories vides: chargement a la demande depuis l'API quand le contenu n'est pas en cache"
 }
