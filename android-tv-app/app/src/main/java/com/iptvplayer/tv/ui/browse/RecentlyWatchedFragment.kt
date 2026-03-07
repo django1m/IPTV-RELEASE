@@ -56,7 +56,11 @@ class RecentlyWatchedFragment : RowsSupportFragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             currentAccount = accountRepository.getActiveAccount() ?: return@launch
             client = accountRepository.getClient(currentAccount!!)
-            loadHistory()
+            // Don't call loadHistory() here - onResume() hasn't fired yet on first load
+            // but onViewCreated -> loadAccount is before onResume, so we call it once here
+            if (rowsAdapter.size() == 0) {
+                loadHistory()
+            }
         }
     }
 
@@ -73,8 +77,10 @@ class RecentlyWatchedFragment : RowsSupportFragment() {
             rowsAdapter.clear()
             val accountId = currentAccount?.id ?: return@launch
 
+            // Exclude LIVE content, only Films and Series
             val allHistory = groupSeriesByLatestEpisode(
                 watchHistoryRepository.getRecentlyWatched(accountId).first()
+                    .filter { it.contentType != ContentType.LIVE }
             )
 
             if (allHistory.isEmpty()) {
@@ -86,12 +92,8 @@ class RecentlyWatchedFragment : RowsSupportFragment() {
 
             // Split into in-progress vs completed
             val inProgress = allHistory.filter { !it.isCompleted && it.progressPercent > 0.02f }
-            val completed = allHistory.filter { it.isCompleted || it.progressPercent <= 0.02f }
-
-            // Split completed by type
-            val films = completed.filter { it.contentType == ContentType.VOD }
-            val series = completed.filter { it.contentType == ContentType.SERIES }
-            val live = completed.filter { it.contentType == ContentType.LIVE }
+            val films = allHistory.filter { it.contentType == ContentType.VOD && (it.isCompleted || it.progressPercent <= 0.02f) }
+            val series = allHistory.filter { it.contentType == ContentType.SERIES && (it.isCompleted || it.progressPercent <= 0.02f) }
 
             var headerIndex = 0L
             val cardPresenter = WatchHistoryCardPresenter()
@@ -116,13 +118,6 @@ class RecentlyWatchedFragment : RowsSupportFragment() {
                 series.forEach { adapter.add(it) }
                 rowsAdapter.add(ListRow(HeaderItem(headerIndex++, "Series (${series.size})"), adapter))
             }
-
-            // Row 4: Live (if any)
-            if (live.isNotEmpty()) {
-                val adapter = ArrayObjectAdapter(cardPresenter)
-                live.forEach { adapter.add(it) }
-                rowsAdapter.add(ListRow(HeaderItem(headerIndex++, "TV en direct (${live.size})"), adapter))
-            }
         }
     }
 
@@ -130,18 +125,7 @@ class RecentlyWatchedFragment : RowsSupportFragment() {
         val xtreamClient = client ?: return
 
         when (history.contentType) {
-            ContentType.LIVE -> {
-                val streamUrl = xtreamClient.getLiveStreamUrl(history.contentId)
-                val intent = Intent(requireContext(), PlaybackActivity::class.java).apply {
-                    putExtra(PlaybackActivity.EXTRA_STREAM_URL, streamUrl)
-                    putExtra(PlaybackActivity.EXTRA_STREAM_NAME, history.name)
-                    putExtra(PlaybackActivity.EXTRA_IS_LIVE, true)
-                    putExtra(PlaybackActivity.EXTRA_CONTENT_ID, history.contentId)
-                    putExtra(PlaybackActivity.EXTRA_CONTENT_TYPE, ContentType.LIVE.name)
-                    putExtra(PlaybackActivity.EXTRA_CONTENT_IMAGE, history.imageUrl)
-                }
-                startActivity(intent)
-            }
+            ContentType.LIVE -> return
             ContentType.VOD -> {
                 val streamUrl = xtreamClient.getVodStreamUrl(history.contentId, history.extension ?: "mp4")
                 val intent = Intent(requireContext(), PlaybackActivity::class.java).apply {
@@ -239,7 +223,7 @@ class WatchHistoryCardPresenter : Presenter() {
             else -> when (history.contentType) {
                 ContentType.VOD -> "Film"
                 ContentType.SERIES -> episodeInfo ?: "Serie"
-                ContentType.LIVE -> "TV en direct"
+                else -> ""
             }
         }
         cardView.contentText = subtitle
@@ -264,8 +248,8 @@ class WatchHistoryCardPresenter : Presenter() {
     }
 
     companion object {
-        const val CARD_WIDTH = 176
-        const val CARD_HEIGHT = 264
+        const val CARD_WIDTH = 240
+        const val CARD_HEIGHT = 360
     }
 }
 
