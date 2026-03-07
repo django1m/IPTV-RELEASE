@@ -1,6 +1,6 @@
 {
-  "versionCode": 15,
-  "versionName": "1.0.14",
-  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.14/app-release.apk",
-  "releaseNotes": "Fix doublons onglet Recemment: une seule source de chargement"
+  "versionCode": 16,
+  "versionName": "1.0.15",
+  "downloadUrl": "https://github.com/django1m/IPTV-RELEASE/releases/download/v1.0.15/app-release.apk",
+  "releaseNotes": "Fix detection mise a jour (cache), fix doublons onglet Recemment"
 }

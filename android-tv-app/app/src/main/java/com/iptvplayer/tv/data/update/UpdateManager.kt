@@ -51,7 +51,10 @@ class UpdateManager(private val context: Context) {
     suspend fun checkForUpdate(): UpdateInfo? = withContext(Dispatchers.IO) {
         try {
             Log.d(TAG, "Checking for update at: $VERSION_CHECK_URL")
-            val request = Request.Builder().url(VERSION_CHECK_URL).build()
+            val request = Request.Builder()
+                .url(VERSION_CHECK_URL)
+                .header("Cache-Control", "no-cache, no-store")
+                .build()
             val response = client.newCall(request).execute()
 
             if (!response.isSuccessful) {
