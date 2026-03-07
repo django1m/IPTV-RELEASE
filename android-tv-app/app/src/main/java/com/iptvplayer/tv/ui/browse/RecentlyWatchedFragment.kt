@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.leanback.app.BrowseSupportFragment
+import androidx.leanback.app.RowsSupportFragment
 import androidx.leanback.widget.*
 import androidx.lifecycle.lifecycleScope
 import com.iptvplayer.tv.R
@@ -23,18 +23,25 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class RecentlyWatchedFragment : BrowseSupportFragment() {
+class RecentlyWatchedFragment : RowsSupportFragment() {
 
     @Inject lateinit var accountRepository: AccountRepository
     @Inject lateinit var watchHistoryRepository: WatchHistoryRepository
     private var client: XtreamClient? = null
     private var currentAccount: Account? = null
 
-    private val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
+    private val rowsAdapter = ArrayObjectAdapter(ListRowPresenter().apply {
+        shadowEnabled = false
+    })
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupUI()
+        adapter = rowsAdapter
+
+        onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
+            if (item is WatchHistory) openWatchHistory(item)
+        }
+
         loadAccount()
     }
 
@@ -42,19 +49,6 @@ class RecentlyWatchedFragment : BrowseSupportFragment() {
         super.onResume()
         if (currentAccount != null) {
             loadHistory()
-        }
-    }
-
-    private fun setupUI() {
-        title = "Recemment"
-        headersState = HEADERS_ENABLED
-        isHeadersTransitionOnBackEnabled = true
-        brandColor = ContextCompat.getColor(requireContext(), R.color.grid_background)
-        searchAffordanceColor = ContextCompat.getColor(requireContext(), R.color.primary)
-        adapter = rowsAdapter
-
-        onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
-            if (item is WatchHistory) openWatchHistory(item)
         }
     }
 
@@ -79,42 +73,55 @@ class RecentlyWatchedFragment : BrowseSupportFragment() {
             rowsAdapter.clear()
             val accountId = currentAccount?.id ?: return@launch
 
-            val continueWatching = groupSeriesByLatestEpisode(
-                watchHistoryRepository.getContinueWatching(accountId).first()
-            )
-            val recentlyWatched = groupSeriesByLatestEpisode(
+            val allHistory = groupSeriesByLatestEpisode(
                 watchHistoryRepository.getRecentlyWatched(accountId).first()
             )
 
-            // Completed items = recently watched minus continue watching
-            val continueIds = continueWatching.map { it.id }.toSet()
-            val completed = recentlyWatched.filter { it.id !in continueIds }
+            if (allHistory.isEmpty()) {
+                val emptyAdapter = ArrayObjectAdapter(EmptyHistoryPresenter())
+                emptyAdapter.add("Aucun historique")
+                rowsAdapter.add(ListRow(HeaderItem(0L, "Recemment"), emptyAdapter))
+                return@launch
+            }
+
+            // Split into in-progress vs completed
+            val inProgress = allHistory.filter { !it.isCompleted && it.progressPercent > 0.02f }
+            val completed = allHistory.filter { it.isCompleted || it.progressPercent <= 0.02f }
+
+            // Split completed by type
+            val films = completed.filter { it.contentType == ContentType.VOD }
+            val series = completed.filter { it.contentType == ContentType.SERIES }
+            val live = completed.filter { it.contentType == ContentType.LIVE }
 
             var headerIndex = 0L
             val cardPresenter = WatchHistoryCardPresenter()
 
-            // Continue watching (in progress)
-            if (continueWatching.isNotEmpty()) {
+            // Row 1: Continue watching (in progress - mixed films & series)
+            if (inProgress.isNotEmpty()) {
                 val adapter = ArrayObjectAdapter(cardPresenter)
-                continueWatching.forEach { adapter.add(it) }
-                val header = HeaderItem(headerIndex++, "Continuer (${continueWatching.size})")
-                rowsAdapter.add(ListRow(header, adapter))
+                inProgress.forEach { adapter.add(it) }
+                rowsAdapter.add(ListRow(HeaderItem(headerIndex++, "Continuer (${inProgress.size})"), adapter))
             }
 
-            // Completed / recently watched
-            if (completed.isNotEmpty()) {
+            // Row 2: Films
+            if (films.isNotEmpty()) {
                 val adapter = ArrayObjectAdapter(cardPresenter)
-                completed.forEach { adapter.add(it) }
-                val header = HeaderItem(headerIndex++, "Vus recemment (${completed.size})")
-                rowsAdapter.add(ListRow(header, adapter))
+                films.forEach { adapter.add(it) }
+                rowsAdapter.add(ListRow(HeaderItem(headerIndex++, "Films (${films.size})"), adapter))
             }
 
-            // Empty state
-            if (continueWatching.isEmpty() && completed.isEmpty()) {
-                val emptyAdapter = ArrayObjectAdapter(EmptyHistoryPresenter())
-                emptyAdapter.add("Aucun historique")
-                val header = HeaderItem(0L, "Recemment")
-                rowsAdapter.add(ListRow(header, emptyAdapter))
+            // Row 3: Series
+            if (series.isNotEmpty()) {
+                val adapter = ArrayObjectAdapter(cardPresenter)
+                series.forEach { adapter.add(it) }
+                rowsAdapter.add(ListRow(HeaderItem(headerIndex++, "Series (${series.size})"), adapter))
+            }
+
+            // Row 4: Live (if any)
+            if (live.isNotEmpty()) {
+                val adapter = ArrayObjectAdapter(cardPresenter)
+                live.forEach { adapter.add(it) }
+                rowsAdapter.add(ListRow(HeaderItem(headerIndex++, "TV en direct (${live.size})"), adapter))
             }
         }
     }
@@ -136,7 +143,6 @@ class RecentlyWatchedFragment : BrowseSupportFragment() {
                 startActivity(intent)
             }
             ContentType.VOD -> {
-                // Resume directly at last position
                 val streamUrl = xtreamClient.getVodStreamUrl(history.contentId, history.extension ?: "mp4")
                 val intent = Intent(requireContext(), PlaybackActivity::class.java).apply {
                     putExtra(PlaybackActivity.EXTRA_STREAM_URL, streamUrl)
@@ -152,7 +158,6 @@ class RecentlyWatchedFragment : BrowseSupportFragment() {
                 startActivity(intent)
             }
             ContentType.SERIES -> {
-                // Resume episode playback directly
                 val episodeId = history.episodeId
                 if (episodeId != null) {
                     val ext = history.extension ?: "mp4"
@@ -180,7 +185,6 @@ class RecentlyWatchedFragment : BrowseSupportFragment() {
                     }
                     startActivity(intent)
                 } else {
-                    // Fallback: no episodeId, open detail page
                     val seriesId = history.seriesId ?: history.contentId
                     val intent = Intent(requireContext(), DetailActivity::class.java).apply {
                         putExtra(DetailActivity.EXTRA_CONTENT_TYPE, ContentType.SERIES.name)
@@ -208,7 +212,7 @@ class WatchHistoryCardPresenter : Presenter() {
         val cardView = ImageCardView(parent.context).apply {
             isFocusable = true
             isFocusableInTouchMode = true
-            setMainImageDimensions(176, 264)
+            setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT)
         }
         return ViewHolder(cardView)
     }
@@ -219,7 +223,6 @@ class WatchHistoryCardPresenter : Presenter() {
 
         cardView.titleText = history.name
 
-        // Show progress info with episode details for series
         val episodeInfo = if (history.contentType == ContentType.SERIES &&
             history.seasonNumber != null && history.episodeNumber != null) {
             "S${history.seasonNumber} E${history.episodeNumber}"
@@ -241,7 +244,6 @@ class WatchHistoryCardPresenter : Presenter() {
         }
         cardView.contentText = subtitle
 
-        // Load image
         if (!history.imageUrl.isNullOrEmpty()) {
             coil.Coil.imageLoader(cardView.context).enqueue(
                 coil.request.ImageRequest.Builder(cardView.context)
@@ -261,11 +263,9 @@ class WatchHistoryCardPresenter : Presenter() {
         cardView.mainImage = null
     }
 
-    private fun formatDuration(ms: Long): String {
-        val totalSeconds = ms / 1000
-        val hours = totalSeconds / 3600
-        val minutes = (totalSeconds % 3600) / 60
-        return if (hours > 0) "${hours}h${minutes.toString().padStart(2, '0')}" else "${minutes}min"
+    companion object {
+        const val CARD_WIDTH = 176
+        const val CARD_HEIGHT = 264
     }
 }
 
