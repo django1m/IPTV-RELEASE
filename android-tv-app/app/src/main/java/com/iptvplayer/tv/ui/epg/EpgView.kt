@@ -102,6 +102,10 @@ class EpgView @JvmOverloads constructor(
     private val archivePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF6366F1.toInt(); textSize = 10f * density }
     private val rulerLinePaint = Paint().apply { color = 0x33FFFFFF.toInt(); strokeWidth = 1f * density }
     private val cornerBgPaint = Paint().apply { color = 0xFF0D1117.toInt() }
+    private val logoPlaceholderBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF374151.toInt() }
+    private val logoPlaceholderTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFF9CA3AF.toInt(); textSize = 16f * density; typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
+    }
 
     // ── Logo cache ──
     private val logoCache = LruCache<String, Bitmap>(60)
@@ -310,15 +314,30 @@ class EpgView @JvmOverloads constructor(
 
             // Logo
             val logoUrl = channel.stream.streamIcon
+            val logoX = logoPadding.toFloat()
+            val logoY = y + (rowHeight - logoSize) / 2f
+            val logoRect = RectF(logoX, logoY, logoX + logoSize, logoY + logoSize)
+
+            var logoDrawn = false
             if (!logoUrl.isNullOrEmpty()) {
                 val bmp = logoCache.get(logoUrl)
                 if (bmp != null) {
-                    val logoX = logoPadding.toFloat()
-                    val logoY = y + (rowHeight - logoSize) / 2f
-                    canvas.drawBitmap(bmp, null, RectF(logoX, logoY, logoX + logoSize, logoY + logoSize), null)
+                    canvas.drawBitmap(bmp, null, logoRect, null)
+                    logoDrawn = true
                 } else {
                     loadLogo(logoUrl)
                 }
+            }
+
+            // Placeholder: circle with first letter when no logo
+            if (!logoDrawn) {
+                val cx = logoRect.centerX()
+                val cy = logoRect.centerY()
+                val radius = logoSize / 2f
+                canvas.drawCircle(cx, cy, radius, logoPlaceholderBgPaint)
+                val letter = (channel.stream.name.firstOrNull() ?: '?').uppercaseChar().toString()
+                val textW = logoPlaceholderTextPaint.measureText(letter)
+                canvas.drawText(letter, cx - textW / 2f, cy + logoPlaceholderTextPaint.textSize / 3f, logoPlaceholderTextPaint)
             }
 
             // Heart icon for favorites
