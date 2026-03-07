@@ -1,14 +1,11 @@
 package com.iptvplayer.tv.ui.browse
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.*
@@ -69,13 +66,25 @@ class RecentlyWatchedFragment : BrowseSupportFragment() {
         }
     }
 
+    private fun groupSeriesByLatestEpisode(items: List<WatchHistory>): List<WatchHistory> {
+        val (seriesItems, otherItems) = items.partition { it.contentType == ContentType.SERIES && it.seriesId != null }
+        val latestPerSeries = seriesItems
+            .groupBy { it.seriesId }
+            .map { (_, episodes) -> episodes.maxByOrNull { it.lastWatchedAt }!! }
+        return (otherItems + latestPerSeries).sortedByDescending { it.lastWatchedAt }
+    }
+
     private fun loadHistory() {
         viewLifecycleOwner.lifecycleScope.launch {
             rowsAdapter.clear()
             val accountId = currentAccount?.id ?: return@launch
 
-            val continueWatching = watchHistoryRepository.getContinueWatching(accountId).first()
-            val recentlyWatched = watchHistoryRepository.getRecentlyWatched(accountId).first()
+            val continueWatching = groupSeriesByLatestEpisode(
+                watchHistoryRepository.getContinueWatching(accountId).first()
+            )
+            val recentlyWatched = groupSeriesByLatestEpisode(
+                watchHistoryRepository.getRecentlyWatched(accountId).first()
+            )
 
             // Completed items = recently watched minus continue watching
             val continueIds = continueWatching.map { it.id }.toSet()
@@ -143,15 +152,44 @@ class RecentlyWatchedFragment : BrowseSupportFragment() {
                 startActivity(intent)
             }
             ContentType.SERIES -> {
-                // Open detail page for series (user picks episode)
-                val seriesId = history.seriesId ?: history.contentId
-                val intent = Intent(requireContext(), DetailActivity::class.java).apply {
-                    putExtra(DetailActivity.EXTRA_CONTENT_TYPE, ContentType.SERIES.name)
-                    putExtra(DetailActivity.EXTRA_CONTENT_ID, seriesId)
-                    putExtra(DetailActivity.EXTRA_CONTENT_NAME, history.name)
-                    putExtra(DetailActivity.EXTRA_CONTENT_IMAGE, history.imageUrl)
+                // Resume episode playback directly
+                val episodeId = history.episodeId
+                if (episodeId != null) {
+                    val ext = history.extension ?: "mp4"
+                    val streamUrl = xtreamClient.getSeriesStreamUrl(episodeId, ext)
+                    val episodeTitle = buildString {
+                        append(history.name)
+                        if (history.seasonNumber != null && history.episodeNumber != null) {
+                            append(" - S${history.seasonNumber} E${history.episodeNumber}")
+                        }
+                    }
+                    val intent = Intent(requireContext(), PlaybackActivity::class.java).apply {
+                        putExtra(PlaybackActivity.EXTRA_STREAM_URL, streamUrl)
+                        putExtra(PlaybackActivity.EXTRA_STREAM_NAME, episodeTitle)
+                        putExtra(PlaybackActivity.EXTRA_IS_LIVE, false)
+                        putExtra(PlaybackActivity.EXTRA_CONTENT_ID, history.contentId)
+                        putExtra(PlaybackActivity.EXTRA_CONTENT_TYPE, ContentType.SERIES.name)
+                        putExtra(PlaybackActivity.EXTRA_CONTENT_IMAGE, history.imageUrl)
+                        putExtra(PlaybackActivity.EXTRA_SERIES_ID, history.seriesId ?: history.contentId)
+                        putExtra(PlaybackActivity.EXTRA_EPISODE_ID, episodeId)
+                        history.seasonNumber?.let { putExtra(PlaybackActivity.EXTRA_SEASON_NUMBER, it) }
+                        history.episodeNumber?.let { putExtra(PlaybackActivity.EXTRA_EPISODE_NUMBER, it) }
+                        if (!history.isCompleted && history.watchedPositionMs > 0) {
+                            putExtra(PlaybackActivity.EXTRA_RESUME_POSITION, history.watchedPositionMs)
+                        }
+                    }
+                    startActivity(intent)
+                } else {
+                    // Fallback: no episodeId, open detail page
+                    val seriesId = history.seriesId ?: history.contentId
+                    val intent = Intent(requireContext(), DetailActivity::class.java).apply {
+                        putExtra(DetailActivity.EXTRA_CONTENT_TYPE, ContentType.SERIES.name)
+                        putExtra(DetailActivity.EXTRA_CONTENT_ID, seriesId)
+                        putExtra(DetailActivity.EXTRA_CONTENT_NAME, history.name)
+                        putExtra(DetailActivity.EXTRA_CONTENT_IMAGE, history.imageUrl)
+                    }
+                    startActivity(intent)
                 }
-                startActivity(intent)
             }
         }
     }
@@ -181,20 +219,23 @@ class WatchHistoryCardPresenter : Presenter() {
 
         cardView.titleText = history.name
 
-        // Show progress info
+        // Show progress info with episode details for series
+        val episodeInfo = if (history.contentType == ContentType.SERIES &&
+            history.seasonNumber != null && history.episodeNumber != null) {
+            "S${history.seasonNumber} E${history.episodeNumber}"
+        } else null
+
         val subtitle = when {
-            history.isCompleted -> "Termine"
+            history.isCompleted -> {
+                if (episodeInfo != null) "$episodeInfo - Termine" else "Termine"
+            }
             history.progressPercent > 0.02f -> {
                 val percent = (history.progressPercent * 100).toInt()
-                "$percent% - ${formatDuration(history.watchedPositionMs)} / ${formatDuration(history.totalDurationMs)}"
+                if (episodeInfo != null) "$episodeInfo - $percent%" else "$percent%"
             }
             else -> when (history.contentType) {
                 ContentType.VOD -> "Film"
-                ContentType.SERIES -> {
-                    if (history.seasonNumber != null && history.episodeNumber != null) {
-                        "S${history.seasonNumber} E${history.episodeNumber}"
-                    } else "Serie"
-                }
+                ContentType.SERIES -> episodeInfo ?: "Serie"
                 ContentType.LIVE -> "TV en direct"
             }
         }
